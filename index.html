@@ -373,6 +373,7 @@
 
         function endGame() {
             gameRunning = false;
+            stopLoop();
             finalScoreDisplay.textContent = score;
             gameOverScreen.style.display = 'flex';
         }
@@ -394,13 +395,22 @@
         retryBtn.addEventListener('click', resetGame);
 
         let frameCount = 0;
+        let animFrameId = null;
+
         function gameLoop() {
             frameCount++;
             if (frameCount % Math.ceil(60 / gameSpeed) === 0) {
                 update();
             }
             draw();
-            requestAnimationFrame(gameLoop);
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function stopLoop() {
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
         }
 
         gameLoop();
