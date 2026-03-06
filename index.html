@@ -157,10 +157,10 @@
         let snake = [{x: 10, y: 10}];
         let direction = {x: 1, y: 0};
         let nextDirection = {x: 1, y: 0};
-        let food = {x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows)};
+        let food = {x: Math.floor(Math.random() * cols) + 5, y: Math.floor(Math.random() * rows) + 5};
         let score = 0;
         let gameRunning = true;
-        let speed = 10;
+        let speed = 8;
         let gameSpeed = speed;
         let particles = [];
 
@@ -283,18 +283,18 @@
             touchStartY = e.touches[0].clientY;
         });
 
-        canvas.addEventListener('touchmove', (e) => {
+        canvas.addEventListener('touchend', (e) => {
             if (!gameRunning) return;
-            const deltaX = e.touches[0].clientX - touchStartX;
-            const deltaY = e.touches[0].clientY - touchStartY;
-            const threshold = 30;
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+            const threshold = 20;
 
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                if (deltaX > threshold && direction.x === 0) nextDirection = {x: 1, y: 0};
-                if (deltaX < -threshold && direction.x === 0) nextDirection = {x: -1, y: 0};
-            } else {
-                if (deltaY > threshold && direction.y === 0) nextDirection = {x: 0, y: 1};
-                if (deltaY < -threshold && direction.y === 0) nextDirection = {x: 0, y: -1};
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+                if (deltaX > 0 && direction.x === 0) nextDirection = {x: 1, y: 0};
+                if (deltaX < 0 && direction.x === 0) nextDirection = {x: -1, y: 0};
+            } else if (Math.abs(deltaY) > threshold) {
+                if (deltaY > 0 && direction.y === 0) nextDirection = {x: 0, y: 1};
+                if (deltaY < 0 && direction.y === 0) nextDirection = {x: 0, y: -1};
             }
         });
 
@@ -331,8 +331,16 @@
                 score += 10;
                 scoreDisplay.textContent = score;
                 createParticles(food.x, food.y);
-                food = {x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows)};
-                gameSpeed = Math.min(speed + snake.length * 0.5, 20);
+                // Spawn food, ensuring it doesn't appear on snake body
+                let newFood = null;
+                while (!newFood) {
+                    const candidate = {x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows)};
+                    if (!snake.some(seg => seg.x === candidate.x && seg.y === candidate.y)) {
+                        newFood = candidate;
+                    }
+                }
+                food = newFood;
+                gameSpeed = Math.min(speed + snake.length * 0.4, 18);
             } else {
                 snake.pop();
             }
